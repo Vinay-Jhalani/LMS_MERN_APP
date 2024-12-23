@@ -11,7 +11,14 @@ import { Input } from "@/components/ui/input";
 
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState } from "react";
+import {
+  useLoginUserMutation,
+  useRegisterUserMutation,
+} from "@/features/api/authApi";
+import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export function Login() {
   const [signupInput, setSignupInput] = useState({
@@ -24,6 +31,27 @@ export function Login() {
     password: "",
   });
 
+  const [
+    registerUser,
+    {
+      data: registerData,
+      error: registerError,
+      isLoading: registerIsLoading,
+      isSuccess: registerIsSuccess,
+    },
+  ] = useRegisterUserMutation();
+  const [
+    loginUser,
+    {
+      data: loginData,
+      error: loginError,
+      isLoading: loginIsLoading,
+      isSuccess: loginIsSuccess,
+    },
+  ] = useLoginUserMutation();
+
+  const navigate = useNavigate();
+
   const changeInputHandler = (e, type) => {
     const { name, value } = e.target;
     if (type === "signup") {
@@ -34,10 +62,30 @@ export function Login() {
     }
   };
 
-  function handleAuth(type) {
+  async function handleAuth(type) {
     const inputData = type === "signup" ? signupInput : loginInput;
-    console.log(inputData);
+    const action = type === "signup" ? registerUser : loginUser;
+    await action(inputData);
   }
+
+  useEffect(() => {
+    if (loginIsSuccess && loginData) {
+      toast.success(loginData?.message || "Login Success");
+      navigate("/");
+    }
+    if (loginError) {
+      toast.error(loginError?.data?.message || "Login failed");
+    }
+  }, [loginIsLoading, loginData, loginError, loginIsSuccess]);
+
+  useEffect(() => {
+    if (registerIsSuccess && registerData) {
+      toast.success(registerData?.message || "Registered successfully");
+    }
+    if (registerError) {
+      toast.error(registerError?.data?.message || "Registration failed");
+    }
+  }, [registerIsLoading, registerData, registerError, registerIsSuccess]);
 
   return (
     <div className="w-full h-screen flex items-center justify-center">
@@ -81,7 +129,19 @@ export function Login() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={() => handleAuth("login")}>Login</Button>
+              <Button
+                disabled={loginIsLoading}
+                onClick={() => handleAuth("login")}
+              >
+                {loginIsLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Please wait
+                  </>
+                ) : (
+                  "Login"
+                )}
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -132,7 +192,19 @@ export function Login() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={() => handleAuth("signup")}>Register</Button>
+              <Button
+                disabled={registerIsLoading}
+                onClick={() => handleAuth("signup")}
+              >
+                {registerIsLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Please wait
+                  </>
+                ) : (
+                  "Register"
+                )}
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
