@@ -5,6 +5,9 @@ import userRoute from "./routes/user.route.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import courseRoute from "./routes/course.route.js";
+import mediaRoute from "./routes/media.route.js";
+import purchaseRoute from "./routes/purchaseCourse.route.js";
+import courseProgress from "./routes/courseProgress.route.js";
 
 dotenv.config({});
 
@@ -35,6 +38,9 @@ app.use((err, req, res, next) => {
 //apis
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/course", courseRoute);
+app.use("/api/v1/media", mediaRoute);
+app.use("/api/v1/purchase", purchaseRoute);
+app.use("/api/v1/course-dashboard", courseProgress);
 
 try {
   await connectDB();

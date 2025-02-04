@@ -165,13 +165,13 @@ function Profile() {
       <div>
         <h1 className="font-medium text-lg">Courses you&apos;re enrolled in</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 my-5">
-          {enrolledCourses.length === 0 ? (
+          {/* {enrolledCourses.length === 0 ? (
             <h1>You haven&apos;t enrolled yet</h1>
           ) : (
             enrolledCourses.map((course) => (
               <Course course={course} key={course._id} />
             ))
-          )}
+          )} */}
         </div>
       </div>
     </div>

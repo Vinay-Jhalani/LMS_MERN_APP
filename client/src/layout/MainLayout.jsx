@@ -1,10 +1,14 @@
 import Navbar from "@/components/Navbar";
+
 import { Outlet } from "react-router-dom";
 
-function MainLayout() {
+function MainLayout({ confettiState, setConfettiState }) {
   return (
     <div className="">
-      <Navbar />
+      <Navbar
+        confettiState={confettiState}
+        setConfettiState={setConfettiState}
+      />
       <Outlet />
     </div>
   );

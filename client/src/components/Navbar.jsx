@@ -18,8 +18,9 @@ import { useLogoutUserMutation } from "@/features/api/authApi";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { useSelector } from "react-redux";
+import ReactConfetti from "react-confetti";
 
-function Navbar() {
+function Navbar({ confettiState, setConfettiState }) {
   const navigate = useNavigate();
   const { user, isLoading } = useSelector((Store) => Store.auth);
   console.log(isLoading);
@@ -40,12 +41,17 @@ function Navbar() {
 
   return (
     <div className="h-16 dark:bg-[#0A0A0A] bg-white border-b dark:border-b-gray-800 border-b-gray-200 duration-300 z-10 fixed top-0 left-0 right-0 ">
+      {confettiState && (
+        <ReactConfetti width={window.innerWidth} height={window.innerHeight} />
+      )}
       {/* DESKTOP */}
       <div className="max-w-7xl mx-auto hidden md:flex justify-between items-center gap-10 h-full">
-        <div className="flex items-center gap-2">
-          <School size={"30"} />
-          <h1 className="hidden md:block font-bold text-2xl">E-LEARNING</h1>
-        </div>
+        <Link to={"/"}>
+          <div className="flex items-center gap-2">
+            <School size={"30"} />
+            <h1 className="hidden md:block font-bold text-2xl">E-LEARNING</h1>
+          </div>
+        </Link>
         {/* User icon and dark mode icon */}
         <div className="flex items-center gap-8">
           {user ? (

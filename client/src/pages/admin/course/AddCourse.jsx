@@ -35,6 +35,7 @@ function AddCourse() {
   useEffect(() => {
     if (isSuccess) {
       toast.success(data?.message || "Course created.");
+      navigate("/admin/course");
     }
     if (isError) {
       toast.error(error?.data?.message || "Error in Creating Course");

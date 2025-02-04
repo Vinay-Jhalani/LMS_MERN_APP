@@ -1,9 +1,10 @@
 import CourseSkeleton from "@/components/CourseSkeleton";
 import Course from "./Course";
+import { useGetPublishedCoursesQuery } from "@/features/api/courseApi";
 
 function Courses() {
-  const courses = [1, 1, 1, 1, 1, 1];
-  const isLoading = false;
+  const { data, isLoading, isSuccess, isError } = useGetPublishedCoursesQuery();
+
   return (
     <div className="bg-gray-50">
       <div className="max-w-7xl mx-auto p-6 ">
@@ -13,7 +14,10 @@ function Courses() {
             ? Array.from({ length: 8 }).map((_, index) => (
                 <CourseSkeleton key={index} />
               ))
-            : courses.map((_, index) => <Course key={index} />)}
+            : data.courses &&
+              data?.courses.map((course, index) => (
+                <Course key={index} course={course} />
+              ))}
         </div>
       </div>
     </div>
