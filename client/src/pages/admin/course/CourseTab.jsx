@@ -259,7 +259,11 @@ function CourseTab() {
           </div>
           <div>
             <Label>Description</Label>
-            <RichTextEditor input={input} setInput={setInput} />
+            <RichTextEditor
+              input={input}
+              setInput={setInput}
+              className="text-black dark:text-white"
+            />
           </div>
           <div className="flex items-center gap-5 flex-wrap">
             <div>

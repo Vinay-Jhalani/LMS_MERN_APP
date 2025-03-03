@@ -5,9 +5,18 @@ import { CourseProgress } from "../models/courseProgress.model.js";
 import { PDFDocument, rgb } from "pdf-lib";
 const fontkit = await import("fontkit");
 import fs from "fs";
-const existingPdfBytes = fs.readFileSync("../../server/assets/template.pdf");
-const cocomatProBuffer = fs.readFileSync("../../server/assets/CocomatPro.ttf");
-const montserratBuffer = fs.readFileSync("../../server/assets/montserrat.ttf");
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const cocomatProPath = path.resolve(__dirname, "../assets/CocomatPro.ttf");
+const templatePath = path.resolve(__dirname, "../assets/template.pdf");
+const montserratPath = path.resolve(__dirname, "../assets/montserrat.ttf");
+
+const existingPdfBytes = fs.readFileSync(templatePath);
+const cocomatProBuffer = fs.readFileSync(cocomatProPath);
+const montserratBuffer = fs.readFileSync(montserratPath);
 
 export const purchasedCourseLectures = async (req, res) => {
   try {
