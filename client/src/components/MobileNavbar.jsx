@@ -48,7 +48,7 @@ function MobileNavbar({ role }) {
           variant="outline"
           className="rounded border-none shadow-none hover:text-bold"
         >
-          <Menu className="text-black" />
+          <Menu className="text-black dark:text-white" />
         </Button>
       </SheetTrigger>
       <SheetContent className="flex flex-col ">
