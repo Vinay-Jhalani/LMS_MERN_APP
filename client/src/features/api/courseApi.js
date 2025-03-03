@@ -100,6 +100,31 @@ export const courseApi = createApi({
         method: "PATCH",
       }),
     }),
+    getSearchCourse: builder.query({
+      query: ({ searchQuery, categories, sortByPrice }) => {
+        let queryString = `/search?query=${encodeURIComponent(searchQuery)}`;
+        //for categories
+        if (categories && categories.length > 0) {
+          const categoriesString = categories.map(encodeURIComponent).join(",");
+          queryString += `&categories=${categoriesString}`;
+        }
+        //for sort by price
+        if (sortByPrice) {
+          queryString += `&sortByPrice=${encodeURIComponent(sortByPrice)}`;
+        }
+        return {
+          url: queryString,
+          method: "GET",
+        };
+      },
+    }),
+    deleteCourse: builder.mutation({
+      query: (courseId) => ({
+        url: `/deleteCourse/${courseId}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["refetchCreatorCourse", "refetchLectures"],
+    }),
   }),
 });
 
@@ -115,4 +140,6 @@ export const {
   useRemoveLectureMutation,
   useGetLectureByIdQuery,
   usePublishCourseMutation,
+  useGetSearchCourseQuery,
+  useDeleteCourseMutation,
 } = courseApi;

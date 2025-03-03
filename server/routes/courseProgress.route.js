@@ -10,9 +10,7 @@ import {
 const router = express.Router();
 
 router.route("/course/:courseId").get(isAuthenticated, purchasedCourseLectures);
-router
-  .route("/getCertificate/:courseId/")
-  .post(isAuthenticated, getCertificate);
+router.route("/getCertificate/:courseId/").get(isAuthenticated, getCertificate);
 router
   .route("/:courseId/update-details")
   .post(isAuthenticated, updateLectureProgress);

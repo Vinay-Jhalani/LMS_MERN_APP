@@ -2,17 +2,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import {
+  useGenerateCertificateMutation,
   usePurchasedCourseLecturesQuery,
   useUpdateLectureProgressMutation,
 } from "@/features/api/courseDashboardApi";
-import { CheckCircle, CheckCircle2, CirclePlay, CloudCog } from "lucide-react";
-import React, { act, useEffect, useState } from "react";
+import { CheckCircle2, CirclePlay } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
+import axios from "axios";
 
-const CourseProgress = ({ confettiState, setConfettiState }) => {
+const CourseProgress = () => {
   const params = useParams();
   const courseId = params.courseId;
+  console.log(courseId);
 
   const { data, isSuccess, isError, refetch } =
     usePurchasedCourseLecturesQuery(courseId);
@@ -29,6 +32,9 @@ const CourseProgress = ({ confettiState, setConfettiState }) => {
     { data: updateLectureData, isSuccess: updateLectureIsSuccess },
   ] = useUpdateLectureProgressMutation();
 
+  const [getPdf, { data: pdfData, isSuccess: pdfIsSuccess }] =
+    useGenerateCertificateMutation();
+
   useEffect(() => {
     updateLecture({ courseId });
   }, []);
@@ -37,17 +43,6 @@ const CourseProgress = ({ confettiState, setConfettiState }) => {
     setCourseTitle(data?.course?.courseTitle);
     setLectures(data?.course?.lectures);
   }, [data]);
-
-  useEffect(() => {
-    if (isCompleted) {
-      console.log(isCompleted);
-
-      // Stop confetti after 5 seconds
-      setTimeout(() => {
-        setConfettiState(false);
-      }, 5000);
-    }
-  }, [isCompleted, setConfettiState]);
 
   useEffect(() => {
     if (updateLectureData?.progress?.lastViewed) {
@@ -85,83 +80,30 @@ const CourseProgress = ({ confettiState, setConfettiState }) => {
     });
   }
 
-  // useEffect(() => {
-  //   console.log(activeLectureId);
-  //   console.log(lectures);
-  //   if (!lectures || !activeLectureId) return;
-  //   const initialLecture =
-  //     lectures && lectures?.find((lecture) => lecture._id === activeLectureId);
-  //   const initialIndex = lectures?.findIndex(
-  //     (lecture) => lecture._id === activeLectureId
-  //   );
-  //   console.log(lectures);
-  //   console.log([initialLecture, initialIndex]);
+  async function getCertificate() {
+    try {
+      // Make a request to the backend to fetch the certificate PDF
+      const response = await axios.get(
+        `http://localhost:8080/api/v1/course-dashboard/getCertificate/${courseId}`,
+        {
+          withCredentials: true,
+          responseType: "blob", // Ensure the response is handled as a blob (binary data)
+        }
+      );
+      toast.success("Download Started");
+      // Create a blob from the response data
+      const blob = new Blob([response.data], { type: "application/pdf" });
 
-  //   setActiveLecture([initialLecture, initialIndex]);
-  // }, [activeLectureId]);
-
-  // const { data, isLoading, isError, refetch } =
-  //   useGetCourseProgressQuery(courseId);
-
-  // const [updateLectureProgress] = useUpdateLectureProgressMutation();
-  // const [
-  //   completeCourse,
-  //   { data: markCompleteData, isSuccess: completedSuccess },
-  // ] = useCompleteCourseMutation();
-  // const [
-  //   inCompleteCourse,
-  //   { data: markInCompleteData, isSuccess: inCompletedSuccess },
-  // ] = useInCompleteCourseMutation();
-
-  // useEffect(() => {
-  //   console.log(markCompleteData);
-
-  //   if (completedSuccess) {
-  //     refetch();
-  //     toast.success(markCompleteData.message);
-  //   }
-  //   if (inCompletedSuccess) {
-  //     refetch();
-  //     toast.success(markInCompleteData.message);
-  //   }
-  // }, [completedSuccess, inCompletedSuccess]);
-
-  // const [currentLecture, setCurrentLecture] = useState(null);
-
-  // if (isLoading) return <p>Loading...</p>;
-  // if (isError) return <p>Failed to load course details</p>;
-
-  // console.log(data);
-
-  // // const { courseDetails, progress, completed } = data.data;
-  // // const { courseTitle } = courseDetails;
-
-  // // initialze the first lecture is not exist
-  // const initialLecture =
-  //   currentLecture || (courseDetails.lectures && courseDetails.lectures[0]);
-
-  // const isLectureCompleted = (lectureId) => {
-  //   return progress.some((prog) => prog.lectureId === lectureId && prog.viewed);
-  // };
-
-  // const handleLectureProgress = async (lectureId) => {
-  //   await updateLectureProgress({ courseId, lectureId });
-  //   refetch();
-  // };
-  // // Handle select a specific lecture to watch
-  // const handleSelectLecture = (lecture) => {
-  //   setCurrentLecture(lecture);
-  //   handleLectureProgress(lecture._id);
-  // };
-
-  // const handleCompleteCourse = async () => {
-  //   await completeCourse(courseId);
-  // };
-  // const handleInCompleteCourse = async () => {
-  //   await inCompleteCourse(courseId);
-  // };
-
-  // const isCompleted = true;
+      // Create a download link and trigger the download
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "certificate.pdf"; // Name the downloaded PDF file
+      link.click();
+    } catch (error) {
+      console.error("Error downloading certificate:", error);
+      toast.error("Something went wrong.");
+    }
+  }
 
   return (
     <>
@@ -169,14 +111,18 @@ const CourseProgress = ({ confettiState, setConfettiState }) => {
         {/* Display course name  */}
         <div className="flex justify-between mb-4">
           <h1 className="text-2xl font-bold">{courseTitle}</h1>
-          <Button variant="outline" disabled={!isCompleted}>
+          <Button
+            variant="outline"
+            disabled={!isCompleted}
+            onClick={() => getCertificate()}
+          >
             Get Certificate
           </Button>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-6">
+        <div className="flex flex-col md:flex-row gap-6 ">
           {/* Video section  */}
-          <div className="flex-1 md:w-3/5 h-fit rounded-lg shadow-lg p-4">
+          <div className="flex-1 md:w-3/5 h-fit rounded-lg shadow-lg p-4 dark:bg-gray-800">
             <div>
               <video
                 src={activeLecture[0]?.videoUrl}
@@ -201,10 +147,11 @@ const CourseProgress = ({ confettiState, setConfettiState }) => {
               {lectures?.map((lecture, index) => (
                 <Card
                   key={index}
-                  className={`mb-3 hover:cursor-pointer transition transform `}
+                  className={`mb-3 hover:cursor-pointer transition transform  `}
                   onClick={() =>
                     updateLectureProgress(lecture?._id, lecture, index)
                   }
+
                   // onClick={() => setActiveLecture([lecture, index])}
                 >
                   <CardContent className="flex items-center justify-between p-4">

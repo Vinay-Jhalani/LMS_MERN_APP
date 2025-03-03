@@ -8,7 +8,7 @@ function EditLecture() {
   const params = useParams();
   const courseId = params.courseId;
   return (
-    <div>
+    <div className="mt-20 md:mt-1 max-w-[100vw]">
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
           <Link to={`/admin/course/${courseId}/lecture`}>

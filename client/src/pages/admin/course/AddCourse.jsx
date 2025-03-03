@@ -43,7 +43,7 @@ function AddCourse() {
   }, [isError, error, isSuccess]);
 
   return (
-    <div className="flex-1 mx-10">
+    <div className="mt-20 flex-1 mx-10 lg:mt-1">
       <div className="mb-4">
         <h1 className="font-bold text-xl">
           Please, tell us more about your course and add necessary details

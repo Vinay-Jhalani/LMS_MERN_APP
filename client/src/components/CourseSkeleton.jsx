@@ -2,7 +2,7 @@ import { Skeleton } from "./ui/skeleton";
 
 const CourseSkeleton = () => {
   return (
-    <div className="bg-white shadow-md hover:shadow-lg transition-shadow rounded-lg overflow-hidden">
+    <div className="bg-white dark:bg-gray-700 shadow-md hover:shadow-lg transition-shadow rounded-lg overflow-hidden">
       <Skeleton className="w-full h-36" />
       <div className="px-5 py-4 space-y-3">
         <Skeleton className="h-6 w-3/4" />

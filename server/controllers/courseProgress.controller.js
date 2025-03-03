@@ -1,9 +1,19 @@
 import mongoose from "mongoose";
 import { Course } from "../models/course.model.js";
+import { User } from "../models/user.model.js";
 import { CourseProgress } from "../models/courseProgress.model.js";
 import { PDFDocument, rgb } from "pdf-lib";
 const fontkit = await import("fontkit");
 import fs from "fs";
+const existingPdfBytes = fs.readFileSync(
+  "../../../../../NEW_LMS/LMS_MERN_APP/server/assets/template.pdf"
+);
+const cocomatProBuffer = fs.readFileSync(
+  "../../../../../NEW_LMS/LMS_MERN_APP/server/assets/CocomatPro.ttf"
+);
+const montserratBuffer = fs.readFileSync(
+  "../../../../../NEW_LMS/LMS_MERN_APP/server/assets/montserrat.ttf"
+);
 
 export const purchasedCourseLectures = async (req, res) => {
   try {
@@ -118,41 +128,60 @@ export const updateLectureProgress = async (req, res) => {
 };
 
 export const getCertificate = async (req, res) => {
-  console.log(req.body.name);
   try {
-    // Load an existing PDF
-    const existingPdfBytes = fs.readFileSync(
-      "../../../../../NEW_LMS/LMS_MERN_APP/server/assets/template.pdf"
-    );
+    const { courseId } = req.params;
+    const userId = req.id;
+    const course = await Course.findById(courseId);
+    const user = await User.findById(userId);
+
+    if (!courseId || !userId || !course || !user) {
+      res.status(404).json({
+        message: "Something went wrong.",
+      });
+    }
+
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
 
     // Register fontkit for custom fonts
     pdfDoc.registerFontkit(fontkit);
 
     // Load the font file
-    const fontBytes = fs.readFileSync(
-      "../../../../../NEW_LMS/LMS_MERN_APP/server/assets/Vollkorn-Regular.ttf"
-    );
-    const Vollkorn = await pdfDoc.embedFont(fontBytes);
+
+    const CocomatPro = await pdfDoc.embedFont(cocomatProBuffer);
+    const Montserrat = await pdfDoc.embedFont(montserratBuffer);
 
     // Get the first page of the document
     const page = pdfDoc.getPages()[0];
 
     // Define text properties
-    const text = `${req.body.name}`;
-    const fontSize = 52;
+    const name = `${user.name}`.toUpperCase();
+    const nameFontSize = 54;
+    const courseName = `${course.courseTitle}`;
+    const courseFontSize = 16;
 
     // Calculate the text width using the font object
-    const textWidth = Vollkorn.widthOfTextAtSize(text, fontSize);
+    const nameTextWidth = CocomatPro.widthOfTextAtSize(name, nameFontSize);
+    const courseTextWidth = Montserrat.widthOfTextAtSize(
+      courseName,
+      courseFontSize
+    );
     const { width, height } = page.getSize();
 
     // Draw centered text
-    page.drawText(text, {
-      x: (width - textWidth) / 2, // Center horizontally
+    page.drawText(name, {
+      x: (width - nameTextWidth) / 2, // Center horizontally
       y: height / 2 + 8, // Center vertically
-      size: fontSize,
-      font: Vollkorn,
-      color: rgb(0, 0, 0),
+      size: nameFontSize,
+      font: CocomatPro,
+      color: rgb(0.0039, 0.3529, 0.3216),
+    });
+
+    page.drawText(courseName, {
+      x: (width - courseTextWidth) / 2, // Center horizontally
+      y: height / 3 + 25, // Center vertically
+      size: courseFontSize,
+      font: Montserrat,
+      color: rgb(0.3765, 0.3765, 0.3765),
     });
 
     // Save the edited PDF
@@ -160,7 +189,11 @@ export const getCertificate = async (req, res) => {
 
     // Set the appropriate headers and send the PDF
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", "attachment; filename=generated.pdf");
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=certificate.pdf"
+    );
+
     res.send(Buffer.from(pdfBytes));
   } catch (error) {
     console.error("Error generating PDF:", error);

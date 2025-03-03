@@ -19,8 +19,10 @@ function CourseTable() {
   return isLoading ? (
     <h1>Loading...</h1>
   ) : (
-    <div>
-      <Button onClick={() => navigate("create")}>Create a new course</Button>
+    <div className="mt-20 md:mt-1 ">
+      <Button onClick={() => navigate("create")} className="mb-6">
+        Create a new course
+      </Button>
       <Table>
         <TableCaption>A list of your recent courses.</TableCaption>
         <TableHeader>
@@ -32,20 +34,20 @@ function CourseTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.courses.map((course) => (
-            <TableRow key={course._id}>
+          {data?.courses.map((course) => (
+            <TableRow key={course?._id}>
               <TableCell className="font-medium">
                 {course?.coursePrice ? "₹" + course?.coursePrice : "NA"}
               </TableCell>
               <TableCell>
                 <Badge>{course?.isPublished ? "Published" : "Private"}</Badge>
               </TableCell>
-              <TableCell>{course.courseTitle}</TableCell>
+              <TableCell>{course?.courseTitle}</TableCell>
               <TableCell className="text-right">
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => navigate(course._id)}
+                  onClick={() => navigate(course?._id)}
                 >
                   <Edit />
                 </Button>

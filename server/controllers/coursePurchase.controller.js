@@ -45,9 +45,6 @@ export const createCheckoutSession = async (req, res) => {
         courseId: courseId,
         userId: userId,
       },
-      shipping_address_collection: {
-        allowed_countries: ["IN"],
-      },
     });
 
     if (!session.url) {

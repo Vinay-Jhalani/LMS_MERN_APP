@@ -15,20 +15,20 @@ import CreateLecture from "./pages/admin/lecture/createLecture";
 import EditLecture from "./pages/admin/lecture/EditLecture";
 import CourseDetail from "./pages/student/CourseDetail";
 import CourseProgress from "./pages/student/CourseProgress";
-import { useState } from "react";
+import SearchPage from "./pages/student/SearchPage";
+import {
+  AdminRoute,
+  AuthenticatedUser,
+  ProtectedRoute,
+} from "./components/ProtectedRoutes";
+import { PurchaseProtectedRoute } from "./components/PurchasedProtectedRoutes";
+import { ThemeProvider } from "./components/ThemeProvider";
 
 function App() {
-  const [confettiState, setConfettiState] = useState(false);
-
   const appRouter = createBrowserRouter([
     {
       path: "/",
-      element: (
-        <MainLayout
-          confettiState={confettiState}
-          setConfettiState={setConfettiState}
-        />
-      ),
+      element: <MainLayout />,
       children: [
         {
           path: "/",
@@ -41,31 +41,59 @@ function App() {
         },
         {
           path: "/login",
-          element: <Login />,
+          element: (
+            <AuthenticatedUser>
+              <Login />
+            </AuthenticatedUser>
+          ),
         },
         {
           path: "my-learning",
-          element: <MyLearning />,
+          element: (
+            <ProtectedRoute>
+              <MyLearning />
+            </ProtectedRoute>
+          ),
         },
         {
           path: "profile",
-          element: <Profile />,
+          element: (
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          ),
         },
-        { path: "course-detail/:courseId", element: <CourseDetail /> },
+        {
+          path: "course/search",
+          element: <SearchPage />,
+        },
+        {
+          path: "course-detail/:courseId",
+          element: (
+            <ProtectedRoute>
+              <CourseDetail />
+            </ProtectedRoute>
+          ),
+        },
         {
           path: "course-progress/:courseId",
           element: (
-            <CourseProgress
-              confettiState={confettiState}
-              setConfettiState={setConfettiState}
-            />
+            <ProtectedRoute>
+              <PurchaseProtectedRoute>
+                <CourseProgress />
+              </PurchaseProtectedRoute>
+            </ProtectedRoute>
           ),
         },
 
         //admin routes
         {
           path: "admin",
-          element: <Sidebar />,
+          element: (
+            <AdminRoute>
+              <Sidebar />
+            </AdminRoute>
+          ),
           children: [
             { path: "dashboard", element: <Dashboard /> },
             { path: "course", element: <CourseTable /> },
@@ -84,7 +112,9 @@ function App() {
 
   return (
     <main>
-      <RouterProvider router={appRouter} />
+      <ThemeProvider>
+        <RouterProvider router={appRouter} />
+      </ThemeProvider>
     </main>
   );
 }

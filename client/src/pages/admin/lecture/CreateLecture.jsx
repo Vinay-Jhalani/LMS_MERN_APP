@@ -6,9 +6,9 @@ import {
   useGetCourseLecturesQuery,
 } from "@/features/api/courseApi";
 
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import Lecture from "./Lecture";
 
@@ -36,6 +36,7 @@ function CreateLecture() {
     if (isSuccess) {
       toast.success(data.message);
       refetch();
+      setLectureTitle("");
     }
     if (error) {
       toast.error(error.data.message);
@@ -45,7 +46,12 @@ function CreateLecture() {
   console.log(lectureData);
 
   return (
-    <div className="flex-1 mx-10">
+    <div className="mt-20 flex-1 mx-10 md:mt-1 max-w-[100vw]">
+      <Link to={`/admin/course/${courseId}`}>
+        <Button size="icon" variant="outline" className="rounded-full mb-4">
+          <ArrowLeft size={16} />
+        </Button>
+      </Link>
       <div className="mb-4">
         <h1 className="font-bold text-xl">
           Awesome, you&apos;re here! Ready to add lectures to your course? 🚀{" "}

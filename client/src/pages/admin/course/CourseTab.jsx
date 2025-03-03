@@ -22,6 +22,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
+  useDeleteCourseMutation,
   useEditCourseMutation,
   useGetCourseByIdQuery,
   usePublishCourseMutation,
@@ -66,6 +67,15 @@ function CourseTab() {
       isLoading: publishIsLoading,
     },
   ] = usePublishCourseMutation();
+
+  const [
+    removeCourse,
+    {
+      isLoading: deleteIsLoading,
+      isSuccess: deleteIsSuccess,
+      isError: deleteIsError,
+    },
+  ] = useDeleteCourseMutation();
 
   useEffect(() => {
     if (isSuccessSavedData && savedData) {
@@ -128,6 +138,20 @@ function CourseTab() {
     await editCourse({ formData, courseId });
   }
 
+  async function deleteCourseHandler() {
+    await removeCourse(courseId);
+    navigate("/admin/course");
+  }
+
+  useEffect(() => {
+    if (deleteIsSuccess) {
+      toast.success("Course Deleted Successfully.");
+    }
+    if (deleteIsError) {
+      toast.error("Internal Serval Error.");
+    }
+  }, [deleteIsError, deleteIsSuccess]);
+
   useEffect(() => {
     if (isSuccess) {
       toast.success(data?.message || "Course Updated");
@@ -177,11 +201,15 @@ function CourseTab() {
                 savedDataIsLoading ||
                 publishIsLoading ||
                 isLoading ||
+                deleteIsLoading ||
                 savedData?.course.lectures.length === 0
               }
               onClick={() => publishCourse(courseId)}
             >
-              {savedDataIsLoading || publishIsLoading || isLoading ? (
+              {savedDataIsLoading ||
+              publishIsLoading ||
+              isLoading ||
+              deleteIsLoading ? (
                 <>
                   <Loader2 className="animate-spin" /> Please wait
                 </>
@@ -193,7 +221,18 @@ function CourseTab() {
             </Button>
           </span>
 
-          <Button>Remove Course</Button>
+          <Button
+            variant="destructive"
+            disabled={
+              deleteIsLoading ||
+              isLoading ||
+              publishIsLoading ||
+              savedDataIsLoading
+            }
+            onClick={() => deleteCourseHandler()}
+          >
+            Remove Course
+          </Button>
         </div>
       </CardHeader>
       <CardContent>
@@ -222,7 +261,7 @@ function CourseTab() {
             <Label>Description</Label>
             <RichTextEditor input={input} setInput={setInput} />
           </div>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-5 flex-wrap">
             <div>
               <Label>Category</Label>
               <Select onValueChange={selectCategory} value={input.category}>
@@ -313,10 +352,24 @@ function CourseTab() {
               className="h-auto"
               variant="outline"
               onClick={() => navigate("/admin/course")}
+              disabled={
+                deleteIsLoading ||
+                isLoading ||
+                publishIsLoading ||
+                savedDataIsLoading
+              }
             >
               Cancel
             </Button>
-            <Button disabled={isLoading} onClick={updateCourseHandler}>
+            <Button
+              disabled={
+                isLoading ||
+                deleteIsLoading ||
+                publishIsLoading ||
+                savedDataIsLoading
+              }
+              onClick={updateCourseHandler}
+            >
               {isLoading ? (
                 <>
                   <Loader2 className=" animate-spin" />

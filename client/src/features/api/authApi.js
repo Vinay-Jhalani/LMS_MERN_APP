@@ -1,10 +1,11 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { userLoggedIn } from "../authSlice";
+import { userLoggedIn, userLoggedOut } from "../authSlice";
 
 const USER_API = `http://localhost:8080/api/v1/user/`;
 
 export const authApi = createApi({
   reducerPath: "authApi",
+  tagTypes: ["logout"],
   baseQuery: fetchBaseQuery({
     baseUrl: USER_API,
     credentials: "include",
@@ -37,6 +38,14 @@ export const authApi = createApi({
         url: "logout",
         method: "GET",
       }),
+      async onQueryStarted(_, { queryFulfilled, dispatch }) {
+        try {
+          dispatch(userLoggedOut());
+        } catch (error) {
+          console.log(error);
+        }
+      },
+      invalidatesTags: ["logout"],
     }),
     loadUser: builder.query({
       query: () => ({
@@ -46,12 +55,13 @@ export const authApi = createApi({
       async onQueryStarted(arg, { queryFulfilled, dispatch }) {
         try {
           const result = await queryFulfilled;
-          dispatch(userLoggedIn({ user: result.data.user, isLoading: true }));
+          dispatch(userLoggedIn({ user: result.data.user, isLoading: false }));
         } catch (error) {
           console.log(error);
           dispatch(userLoggedIn({ isLoading: false }));
         }
       },
+      providesTags: ["logout"],
     }),
     updateUser: builder.mutation({
       query: (formData) => ({
@@ -60,6 +70,7 @@ export const authApi = createApi({
         body: formData,
         credentials: "include",
       }),
+      invalidatesTags: ["logout"],
     }),
   }),
 });

@@ -22,10 +22,17 @@ export const courseDashboardApi = createApi({
         body: { currentLecture, completed },
       }),
     }),
+    generateCertificate: builder.mutation({
+      query: (courseId) => ({
+        url: `getCertificate/${courseId}`,
+        method: "POST",
+      }),
+    }),
   }),
 });
 
 export const {
   usePurchasedCourseLecturesQuery,
   useUpdateLectureProgressMutation,
+  useGenerateCertificateMutation,
 } = courseDashboardApi;

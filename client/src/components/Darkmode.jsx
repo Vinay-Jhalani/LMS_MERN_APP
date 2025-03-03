@@ -6,8 +6,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Moon, Sun } from "lucide-react";
+import { useTheme } from "./ThemeProvider";
 
 function Darkmode() {
+  const { setTheme } = useTheme();
   return (
     <DropdownMenu className="flex items-center gap-7">
       <DropdownMenuTrigger asChild>

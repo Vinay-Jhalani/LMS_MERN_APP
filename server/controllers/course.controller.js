@@ -1,5 +1,6 @@
 import { Course } from "../models/course.model.js";
 import { Lecture } from "../models/lecture.model.js";
+import { User } from "../models/user.model.js";
 import {
   deleteMediaFromCloudinary,
   deleteVideoFromCloudinary,
@@ -69,8 +70,9 @@ export const editCourse = async (req, res) => {
       coursePrice,
     } = req.body;
     const courseThumbnail = req.file;
+    const userId = req.id;
 
-    let course = await Course.findById(courseId);
+    let course = await Course.findOne({ creator: userId, _id: courseId });
     if (!course) {
       return res.status(404).json({
         message: "Course not found!",
@@ -150,8 +152,9 @@ export const editCourse = async (req, res) => {
 
 export const getCourseById = async (req, res) => {
   try {
+    const userId = req.id;
     const { courseId } = req.params;
-    const course = await Course.findById(courseId);
+    const course = await Course.findOne({ creator: userId, _id: courseId });
     if (!course) {
       return res.status(404).json({
         message: "Course not found",
@@ -175,6 +178,7 @@ export const getCourseById = async (req, res) => {
 
 export const createLecture = async (req, res) => {
   try {
+    const userId = req.id;
     const { lectureTitle } = req.body;
     const { courseId } = req.params;
 
@@ -185,9 +189,7 @@ export const createLecture = async (req, res) => {
       });
     }
 
-    const lecture = Lecture.create({ lectureTitle });
-
-    const course = await Course.findById(courseId);
+    const course = await Course.findOne({ creator: userId, _id: courseId });
 
     if (!course) {
       return res.status(500).json({
@@ -195,6 +197,8 @@ export const createLecture = async (req, res) => {
         success: false,
       });
     }
+
+    const lecture = Lecture.create({ lectureTitle });
 
     // course.lectures.push((await lecture)._id);
     course.lectures.push((await lecture)._id);
@@ -219,8 +223,14 @@ export const createLecture = async (req, res) => {
 
 export const getCourseLecture = async (req, res) => {
   try {
+    const userId = req.id;
     const { courseId } = req.params;
-    const course = await Course.findById(courseId).populate("lectures");
+
+    const course = await Course.findOne({
+      creator: userId,
+      _id: courseId,
+    }).populate("lectures");
+
     if (!course) {
       return res.status(404).json({
         message: "Courses not found",
@@ -244,6 +254,7 @@ export const getCourseLecture = async (req, res) => {
 
 export const editLecture = async (req, res) => {
   try {
+    const userId = req.id;
     const { lectureTitle, videoInfo, isPreviewFree = false } = req.body;
     if (!lectureTitle)
       return res.status(500).json({
@@ -256,8 +267,19 @@ export const editLecture = async (req, res) => {
       });
     }
     const { courseId, lectureId } = req.params;
-    const course = await Course.findById(courseId);
+    const course = await Course.findOne({ creator: userId, _id: courseId });
+    if (!course) {
+      return res.status(404).json({
+        message: "Course not found",
+      });
+    }
     const lecture = await Lecture.findById(lectureId);
+
+    if (!course.lectures.includes(lecture._id)) {
+      return res.status(404).json({
+        message: "Invalid request",
+      });
+    }
 
     if (!videoInfo && !lecture.videoUrl && !lecture.publicId) {
       return res.status(500).json({
@@ -276,7 +298,7 @@ export const editLecture = async (req, res) => {
     }
 
     if (!course.lectures.includes(lecture._id)) {
-      return res.status(500).json({
+      return res.status(404).json({
         message: "Invalid request",
       });
     }
@@ -307,21 +329,84 @@ export const editLecture = async (req, res) => {
   }
 };
 
-export const removeLecture = async (req, res) => {
+export const deleteCourse = async (req, res) => {
   try {
-    const { lectureId, courseId } = req.params;
-    const lecture = await Lecture.findByIdAndDelete(lectureId);
-    const course = await Course.findById(courseId);
-    if (!lecture) {
-      return res.status(404).json({
-        message: "Lecture not found",
+    const userId = req.id;
+    const { courseId } = req.params;
+
+    const courseLectures = await Course?.findOne({
+      _id: courseId,
+      creator: userId,
+    })
+      .select("lectures, courseThumbnail")
+      .populate("lectures");
+
+    if (!courseLectures) {
+      res.status(404).json({
+        message: "FISHY FISH HMM.",
       });
     }
+
+    const courseThumbnailId = courseLectures?.courseThumbnail
+      ?.split("/")
+      ?.pop()
+      ?.split(".")[0];
+    if (courseThumbnailId) {
+      await deleteMediaFromCloudinary(courseThumbnailId);
+    }
+    const lectureIds = courseLectures?.lectures.map((lecture) =>
+      lecture._id.toString()
+    );
+    const videoIds = courseLectures?.lectures.map(
+      (lecture) => lecture.publicId
+    );
+
+    console.log(lectureIds, videoIds);
+
+    if (Array.isArray(videoIds)) {
+      const validVideoIds = videoIds.filter((id) => id !== undefined);
+
+      if (validVideoIds.length > 0) {
+        await Promise.all(
+          validVideoIds.map((id) => deleteVideoFromCloudinary(id))
+        );
+      }
+    }
+
+    await Lecture.deleteMany({ _id: { $in: lectureIds } });
+
+    await Course.findByIdAndDelete(courseId);
+
+    res.status(200).json({
+      message: "Course deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting course:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const removeLecture = async (req, res) => {
+  try {
+    const userId = req.id;
+    const { lectureId, courseId } = req.params;
+
+    const course = await Course.findOne({ creator: userId, _id: courseId });
+
     if (!course) {
       return res.status(404).json({
         message: "Course not found",
       });
     }
+
+    const lecture = await Lecture.findByIdAndDelete(lectureId);
+
+    if (!lecture) {
+      return res.status(404).json({
+        message: "Lecture not found",
+      });
+    }
+
     if (!course.lectures.includes(lecture._id)) {
       return res.status(404).json({
         message: "Invalid request",
@@ -355,19 +440,26 @@ export const removeLecture = async (req, res) => {
 
 export const getLectureById = async (req, res) => {
   try {
+    const userId = req.id;
+
     const { lectureId, courseId } = req.params;
-    const lecture = await Lecture.findById(lectureId);
-    const course = await Course.findById(courseId);
-    if (!lecture) {
-      return res.status(404).json({
-        message: "Lecture not found",
-      });
-    }
+
+    const course = await Course.findOne({ creator: userId, _id: courseId });
+
     if (!course) {
       return res.status(404).json({
         message: "Course not found",
       });
     }
+
+    const lecture = await Lecture.findById(lectureId);
+
+    if (!lecture) {
+      return res.status(404).json({
+        message: "Lecture not found",
+      });
+    }
+
     if (!course.lectures.includes(lecture._id)) {
       return res.status(404).json({
         message: "Invalid request",
@@ -390,6 +482,9 @@ export const getLectureById = async (req, res) => {
 
 export const uploadLecture = async (req, res) => {
   try {
+    const userId = req.id;
+    const user = await User.findOne({ _id: userId, role: "admin" });
+
     const result = await uploadMedia(req.file.path);
     res.status(200).json({
       message: "File uploaded successfully",
@@ -409,8 +504,10 @@ export const uploadLecture = async (req, res) => {
 
 export const togglePublishCourse = async (req, res) => {
   try {
+    const userId = req.id;
     const { courseId } = req.params;
-    const course = await Course.findById(courseId);
+    const course = await Course.findOne({ creator: userId, _id: courseId });
+
     if (!course) {
       return res.status(404).json({
         message: "Course not found!",
@@ -458,5 +555,45 @@ export const getPublishedCourses = async (_, res) => {
     res.status(500).json({
       message: "Error while fetching courses",
     });
+  }
+};
+
+export const searchCourse = async (req, res) => {
+  try {
+    const { query = "", categories = [], sortByPrice = "" } = req.query;
+
+    // create search query
+    const searchCriteria = {
+      isPublished: true,
+      $or: [
+        { courseTitle: { $regex: query, $options: "i" } },
+        { subTitle: { $regex: query, $options: "i" } },
+        { category: { $regex: query, $options: "i" } },
+      ],
+    };
+
+    // if categories selected
+    if (categories.length > 0) {
+      searchCriteria.category = { $in: categories };
+    }
+
+    // define sorting order
+    const sortOptions = {};
+    if (sortByPrice === "low") {
+      sortOptions.coursePrice = 1; //sort by price in ascending
+    } else if (sortByPrice === "high") {
+      sortOptions.coursePrice = -1; // descending
+    }
+
+    let courses = await Course.find(searchCriteria)
+      .populate({ path: "creator", select: "name photoUrl" })
+      .sort(sortOptions);
+
+    return res.status(200).json({
+      success: true,
+      courses: courses || [],
+    });
+  } catch (error) {
+    console.log(error);
   }
 };

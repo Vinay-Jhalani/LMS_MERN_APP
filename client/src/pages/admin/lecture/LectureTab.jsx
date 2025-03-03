@@ -36,7 +36,10 @@ function LectureTab() {
   const { courseId, lectureId } = params;
   const navigate = useNavigate();
 
-  const { data: lectureData } = useGetLectureByIdQuery({ courseId, lectureId });
+  const { data: lectureData, error: lectureError } = useGetLectureByIdQuery({
+    courseId,
+    lectureId,
+  });
 
   useEffect(() => {
     if (lectureData) {
@@ -48,7 +51,10 @@ function LectureTab() {
       lectureData.lecture.videoUrl &&
         setPreviewVideoUrl(lectureData.lecture.videoUrl);
     }
-  }, [lectureData]);
+    if (lectureError) {
+      toast.error(lectureError.data.message);
+    }
+  }, [lectureData, lectureError]);
 
   const [editLecture, { data, isLoading, error, isSuccess }] =
     useEditLectureMutation();
@@ -86,7 +92,8 @@ function LectureTab() {
           toast.success(res.data.message);
         }
       } catch (error) {
-        toast.error("Video upload failed");
+        toast.error("Something is wrong.");
+        console.log(error);
       } finally {
         setMediaProgress(false);
         setBtnDisable(false);

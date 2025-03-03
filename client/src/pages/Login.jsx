@@ -120,6 +120,7 @@ export function Login() {
                 <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
+                  type="password"
                   required={true}
                   name="password"
                   value={loginInput.password}
