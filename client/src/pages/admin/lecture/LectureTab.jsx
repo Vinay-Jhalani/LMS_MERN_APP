@@ -21,7 +21,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-const MEDIA_API = "http://localhost:8080/api/v1/media";
+const MEDIA_API = `${import.meta.env.VITE_BACKEND_URL}/api/v1/media`;
 
 function LectureTab() {
   const [lectureTitle, setLectureTitle] = useState("");

@@ -84,7 +84,9 @@ const CourseProgress = () => {
     try {
       // Make a request to the backend to fetch the certificate PDF
       const response = await axios.get(
-        `http://localhost:8080/api/v1/course-dashboard/getCertificate/${courseId}`,
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/api/v1/course-dashboard/getCertificate/${courseId}`,
         {
           withCredentials: true,
           responseType: "blob", // Ensure the response is handled as a blob (binary data)
