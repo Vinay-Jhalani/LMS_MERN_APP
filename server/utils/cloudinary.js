@@ -8,10 +8,7 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const caPath = path.resolve(
-  __dirname,
-  "../../../LMS_MERN_APP/server/cloudinary.pem"
-);
+const caPath = path.resolve(__dirname, "../../server/cloudinary.pem");
 
 dotenv.config({});
 
