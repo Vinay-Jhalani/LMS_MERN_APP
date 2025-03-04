@@ -16,6 +16,7 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  secure: true,
 });
 
 const agent = new https.Agent({
@@ -26,6 +27,7 @@ export const uploadMedia = async (file) => {
   try {
     const uploadResponse = await cloudinary.uploader.upload(file, {
       resource_type: "auto",
+      secure: true,
     });
 
     fs.unlink(file, (err) => {
