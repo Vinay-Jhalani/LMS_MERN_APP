@@ -39,7 +39,7 @@ const CourseDetail = () => {
   };
 
   function overlayVideoHandler(videoUrl) {
-    setOverlayVideoUrl(videoUrl);
+    setOverlayVideoUrl(videoUrl?.replace("http://", "https://"));
     setOverlayVideoVisible((prev) => !prev);
   }
 
@@ -132,7 +132,10 @@ const CourseDetail = () => {
                     width="100%"
                     height={"100%"}
                     className="object-contain"
-                    url={course.lectures[0].videoUrl}
+                    url={course?.lectures[0]?.videoUrl?.replace(
+                      "http://",
+                      "https://"
+                    )}
                     controls={true}
                   />
                 </div>

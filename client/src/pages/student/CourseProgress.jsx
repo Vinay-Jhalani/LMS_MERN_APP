@@ -127,7 +127,7 @@ const CourseProgress = () => {
           <div className="flex-1 md:w-3/5 h-fit rounded-lg shadow-lg p-4 dark:bg-gray-800">
             <div>
               <video
-                src={activeLecture[0]?.videoUrl}
+                src={activeLecture[0]?.videoUrl?.replace("http://", "https://")}
                 controls
                 className="w-full h-auto max-h-[50vh]  md:rounded-lg object-contain"
               />
