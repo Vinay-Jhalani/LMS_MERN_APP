@@ -44,7 +44,7 @@ function Navbar() {
       <div className="max-w-7xl mx-auto hidden md:flex justify-between items-center gap-10 h-full">
         <Link to={"/"}>
           <div className="flex items-center">
-            <img src="../../public/logo.png" width="5%" />
+            <img src="/logo.png" width="5%" />
             <h1 className="hidden md:block font-bold text-2xl ml-1">
               CourseCo.
             </h1>
@@ -110,7 +110,7 @@ function Navbar() {
             onClick={() => navigate("/")}
           >
             {" "}
-            <img src="../../public/logo.png" className="w-[7%]" />
+            <img src="/logo.png" className="w-[7%]" />
             <p className="font-bold">CourseCo.</p>
           </div>
         </div>
