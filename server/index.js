@@ -8,6 +8,7 @@ import courseRoute from "./routes/course.route.js";
 import mediaRoute from "./routes/media.route.js";
 import purchaseRoute from "./routes/purchaseCourse.route.js";
 import courseProgress from "./routes/courseProgress.route.js";
+import axios from "axios";
 
 dotenv.config({});
 
