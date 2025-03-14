@@ -36,6 +36,10 @@ app.use((err, req, res, next) => {
   next();
 });
 
+app.get("/ping", (req, res) => {
+  res.send("Server is alive");
+});
+
 //apis
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/course", courseRoute);
