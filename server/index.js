@@ -37,6 +37,7 @@ app.use((err, req, res, next) => {
 });
 
 app.get("/ping", (req, res) => {
+  console.log("Back to life");
   res.send("Server is alive");
 });
 
